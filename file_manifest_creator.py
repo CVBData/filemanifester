@@ -47,6 +47,7 @@ for path, subdirs, files in os.walk(root):
             print(out, file=f)
 
 # report final location of output file to user
+print("Output created successfully at the following location:")
 print(output_final_location)
 
 # wait 5 seconds
