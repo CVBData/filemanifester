@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # import statements
-import sys, os, time
+import sys, os, time, re
 from datetime import datetime
 
 # set up date/time variables for output naming
@@ -29,22 +29,31 @@ output_location = pre_output_location.strip()
 # set final location of output file to user-selected location
 output_final_location = os.path.join(output_location, outfile_name)
 
+excluded_counter = 0
+
 # insert data-agnostic header
 with open(output_final_location, 'a') as f:
-    print("fullPath\tfileOriginalName\tfileNewName", file=f)
+    print("fullPath\tfileOriginalName\tfileExtension\tfileNewName", file=f)
 
 # for every file within the nominated path, walk through and add to manifest
 for path, subdirs, files in os.walk(root):
     for name in files:
-        # create joined path
-        line = os.path.join(path, name)
-        # create list for join iterator
-        out_string = [line, name]
-        # join fields with tabs to become a .tsv-formatted record
-        out = '\t'.join(out_string)
-        # append new record to output file
-        with open(output_final_location, 'a') as f:
-            print(out, file=f)
+        if re.search('^\._', name):
+            print("Excluded " + str(excluded_counter) + " " + str(name))
+            excluded_counter += 1
+        else:
+            # extract extension suffix
+            suffix = name.rsplit('.', 1)[-1].lower()
+            # create joined path
+            line = os.path.join(path, name)
+            # create list for join iterator
+            out_string = [line, name, suffix]
+            # join fields with tabs to become a .tsv-formatted record
+            out = '\t'.join(out_string)
+            # append new record to output file
+            if suffix != "ds_store":
+                with open(output_final_location, 'a', encoding="utf-8") as f:
+                    print(out, file=f)
 
 # report final location of output file to user
 print("Output created successfully at the following location:")
